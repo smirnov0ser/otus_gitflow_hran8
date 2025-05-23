@@ -1,14 +1,21 @@
 #!/bin/bash
 set -e  # Прерывать при ошибках
 
-# Настройка Git для автоматического разрешения конфликтов
+# Настройка Git для автоматического режима
 export GIT_MERGE_AUTOEDIT=no
-git config --global core.editor true  # Блокируем открытие редактора
+git config core.autocrlf false
 
-git pull
-git checkout -B "storage_1c" "origin/storage_1c"
-git pull
-git checkout -B "branch_sync_hran" "origin/branch_sync_hran"
+# Функция для безопасного переключения веток
+safe_checkout() {
+    git reset --hard HEAD --quiet
+    git clean -fd --quiet
+    git checkout "$1" --force --quiet
+}
+
+git pull --quiet
+safe_checkout "storage_1c"
+git pull --quiet
+safe_checkout "branch_sync_hran"
 
 logof=$(git log --reverse storage_1c...branch_sync_hran --pretty=format:"%h;%s|" | tr -d '\r\n')
 IFS='|' read -ra my_array <<< "$logof"
@@ -19,40 +26,56 @@ for i in "${my_array[@]}"; do
     commit=$(echo "$i" | sed 's/;.*//')
     echo "!! Обработка: ${BranchName} (коммит ${commit})"
     
-    git checkout -B "develop" "origin/develop"
+    # Всегда начинаем с чистого состояния
+    safe_checkout "develop"
     
     # Создаем feature-ветку
-    if git ls-remote --exit-code --heads origin "feature/${BranchName}" >/dev/null; then
-        git checkout -B "feature/${BranchName}" "origin/feature/${BranchName}"
+    if git show-ref --verify --quiet refs/remotes/origin/"feature/${BranchName}"; then
+        safe_checkout "feature/${BranchName}"
+        # Устанавливаем upstream перед pull
+        git branch --set-upstream-to=origin/"feature/${BranchName}" "feature/${BranchName}" --quiet
+        git pull --quiet
     else
-        git checkout -B "feature/${BranchName}" develop
+        git checkout -b "feature/${BranchName}" develop --quiet
+        # Сначала делаем коммит пустых изменений
+        git commit --allow-empty -m "Initial commit for ${BranchName}" --quiet
+        # Устанавливаем upstream при первом push
+        git push --set-upstream origin "feature/${BranchName}" --quiet
     fi
     
-    # Cherry-pick с автоматическим разрешением конфликтов
-    if ! git cherry-pick "${commit}" --keep-redundant-commits --strategy-option recursive -X theirs >/dev/null 2>&1; then
-        # Автоматически разрешаем конфликты
+    # Cherry-pick с обработкой ошибок
+    set +e  # Временно отключаем прерывание при ошибках
+    git cherry-pick "${commit}" --keep-redundant-commits --strategy-option recursive -X theirs --no-edit >/dev/null 2>&1
+    
+    if [ $? -ne 0 ]; then
+        # Автоматическое разрешение конфликтов
         git diff --name-only --diff-filter=U | while read -r file; do
-            [ "$file" != "src/cf/VERSION" ] && git checkout --theirs "$file" && git add "$file"
+            [ "$file" != "src/cf/VERSION" ] && git checkout --theirs "$file" 2>/dev/null
+            git add "$file" 2>/dev/null
         done
         
-        # Форсируем продолжение cherry-pick без VERSION
-        git reset -- src/cf/VERSION 2>/dev/null || true
-        git commit --allow-empty -m "feature/${BranchName} - ${commit} (cherry-pick with auto-resolved conflicts)"
+        # Продолжаем cherry-pick
+        git cherry-pick --continue --no-edit >/dev/null 2>&1 || true
     fi
+    set -e  # Включаем обработку ошибок обратно
     
-    # Гарантированно удаляем VERSION из индекса
+    # Гарантированно убираем VERSION
     git rm --cached src/cf/VERSION 2>/dev/null || true
+    git reset -- src/cf/VERSION 2>/dev/null || true
+    
+    # Коммит изменений
+    git add . -- ':!src/cf/VERSION'
+    git commit --allow-empty -m "feature/${BranchName} - ${commit}" --quiet
     
     # Удаляем dumplist.txt если существует
-    [ -f "src/cf/dumplist.txt" ] && git rm -f "src/cf/dumplist.txt"
+    [ -f "src/cf/dumplist.txt" ] && git rm -f "src/cf/dumplist.txt" --quiet
     
-    # Пушим без открытия редактора
-    GIT_EDITOR=true git push --set-upstream origin "feature/${BranchName}"
+    # Пушим изменения
+    git push origin "feature/${BranchName}" --force-with-lease --quiet
 done
 
 # Финализация
-git reset --hard
-git checkout -B "branch_sync_hran" "origin/branch_sync_hran"
-git merge "storage_1c" --no-edit
-git push origin "branch_sync_hran"
-git checkout "storage_1c"
+safe_checkout "branch_sync_hran"
+git merge "storage_1c" --no-edit --quiet
+git push origin "branch_sync_hran" --quiet
+safe_checkout "storage_1c"
