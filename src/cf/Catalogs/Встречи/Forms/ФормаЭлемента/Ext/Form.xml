@@ -66,21 +66,6 @@
 							<ShowTitle>false</ShowTitle>
 							<ExtendedTooltip name="ПериодДатаРасширеннаяПодсказка" id="25"/>
 							<ChildItems>
-								<InputField name="НачалоДата" id="13">
-									<DataPath>Объект.Начало</DataPath>
-									<EditMode>EnterOnInput</EditMode>
-									<AutoMaxWidth>false</AutoMaxWidth>
-									<MaxWidth>11</MaxWidth>
-									<SpinButton>true</SpinButton>
-									<EditFormat>
-										<v8:item>
-											<v8:lang>ru</v8:lang>
-											<v8:content>ДЛФ=D</v8:content>
-										</v8:item>
-									</EditFormat>
-									<ContextMenu name="НачалоДатаКонтекстноеМеню" id="14"/>
-									<ExtendedTooltip name="НачалоДатаРасширеннаяПодсказка" id="15"/>
-								</InputField>
 								<InputField name="ОкончаниеДата" id="16">
 									<DataPath>Объект.Окончание</DataPath>
 									<EditMode>EnterOnInput</EditMode>
@@ -95,6 +80,21 @@
 									</EditFormat>
 									<ContextMenu name="ОкончаниеДатаКонтекстноеМеню" id="17"/>
 									<ExtendedTooltip name="ОкончаниеДатаРасширеннаяПодсказка" id="18"/>
+								</InputField>
+								<InputField name="НачалоДата" id="13">
+									<DataPath>Объект.Начало</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<AutoMaxWidth>false</AutoMaxWidth>
+									<MaxWidth>11</MaxWidth>
+									<SpinButton>true</SpinButton>
+									<EditFormat>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>ДЛФ=D</v8:content>
+										</v8:item>
+									</EditFormat>
+									<ContextMenu name="НачалоДатаКонтекстноеМеню" id="14"/>
+									<ExtendedTooltip name="НачалоДатаРасширеннаяПодсказка" id="15"/>
 								</InputField>
 							</ChildItems>
 						</UsualGroup>
@@ -117,26 +117,6 @@
 							<ShowTitle>false</ShowTitle>
 							<ExtendedTooltip name="ПериодВремяРасширеннаяПодсказка" id="27"/>
 							<ChildItems>
-								<InputField name="НачалоВремя" id="28">
-									<DataPath>Объект.Начало</DataPath>
-									<TitleLocation>None</TitleLocation>
-									<AutoMaxWidth>false</AutoMaxWidth>
-									<MaxWidth>10</MaxWidth>
-									<DropListButton>true</DropListButton>
-									<ChoiceButton>false</ChoiceButton>
-									<SpinButton>true</SpinButton>
-									<EditFormat>
-										<v8:item>
-											<v8:lang>ru</v8:lang>
-											<v8:content>ДФ=ЧЧ:мм</v8:content>
-										</v8:item>
-									</EditFormat>
-									<ContextMenu name="НачалоВремяКонтекстноеМеню" id="29"/>
-									<ExtendedTooltip name="НачалоВремяРасширеннаяПодсказка" id="30"/>
-									<Events>
-										<Event name="ChoiceProcessing">НачалоОбработкаВыбора</Event>
-									</Events>
-								</InputField>
 								<InputField name="ОкончаниеВремя" id="31">
 									<DataPath>Объект.Окончание</DataPath>
 									<TitleLocation>None</TitleLocation>
@@ -155,6 +135,26 @@
 									<ExtendedTooltip name="ОкончаниеВремяРасширеннаяПодсказка" id="33"/>
 									<Events>
 										<Event name="ChoiceProcessing">ОкончаниеОбработкаВыбора</Event>
+									</Events>
+								</InputField>
+								<InputField name="НачалоВремя" id="28">
+									<DataPath>Объект.Начало</DataPath>
+									<TitleLocation>None</TitleLocation>
+									<AutoMaxWidth>false</AutoMaxWidth>
+									<MaxWidth>10</MaxWidth>
+									<DropListButton>true</DropListButton>
+									<ChoiceButton>false</ChoiceButton>
+									<SpinButton>true</SpinButton>
+									<EditFormat>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>ДФ=ЧЧ:мм</v8:content>
+										</v8:item>
+									</EditFormat>
+									<ContextMenu name="НачалоВремяКонтекстноеМеню" id="29"/>
+									<ExtendedTooltip name="НачалоВремяРасширеннаяПодсказка" id="30"/>
+									<Events>
+										<Event name="ChoiceProcessing">НачалоОбработкаВыбора</Event>
 									</Events>
 								</InputField>
 							</ChildItems>
